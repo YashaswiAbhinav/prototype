@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" 
+      integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+    <!-- Tailwind CSS -->
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+    <title>Fake News Detection</title>
+  </head>
+  <body class="bg-gray-200">
+    <header class="text-gray-600 body-font">
+      <div class="container mx-auto flex flex-wrap p-5 flex-col md:flex-row items-center">
+        <a class="flex title-font font-medium items-center text-gray-900 mb-4 md:mb-0">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" 
+               stroke-linejoin="round" stroke-width="2" class="w-10 h-10 text-white p-2 bg-green-500 rounded-full" 
+               viewBox="0 0 24 24">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+          </svg>
+          <span class="ml-3 text-xl">Fake News Detection</span>
+        </a>
+        <nav class="md:ml-auto flex flex-wrap items-center text-base justify-center">
+          <a href="/" class="mr-5 hover:text-gray-900">Home</a>
+          <a href="/prediction" class="mr-5 hover:text-gray-900">Prediction</a>
+          <a href="/about_us" class="mr-5 hover:text-gray-900">About us</a>
+          <a href="/contact_us" class="mr-5 hover:text-gray-900">Contact us</a>
+        </nav>
+      </div>
+    </header>
+    <hr>
+    <section class="text-gray-600 body-font">
+      <div class="container px-5 py-24 mx-auto">
+        <div class="flex flex-col text-center w-full mb-10">
+          <h2 class="text-xs text-green-500 tracking-widest font-medium title-font mb-1">Prediction</h2>
+          <h1 class="sm:text-3xl text-2xl font-medium title-font mb-4 text-gray-900">
+            Fake News Detection
+          </h1>
+          <p class="lg:w-2/3 mx-auto leading-relaxed text-base">
+            Fake news is the deliberate spread of misinformation via traditional news media or social media.
+            False information spreads extraordinarily fast.
+          </p>
+          <br>
+          <!-- Conditional prediction result styling -->
+          {% if results and results.Meta_Ensemble.Final_Prediction == "REAL NEWS" %}
+            <p class="h4 text-success"><b>{{ results.Meta_Ensemble.Final_Prediction }}</b></p>
+          {% elif results and results.Meta_Ensemble.Final_Prediction == "FAKE NEWS" %}
+            <p class="h4 text-danger"><b>{{ results.Meta_Ensemble.Final_Prediction }}</b></p>
+          {% else %}
+            <p class="h4 text-primary"><b>{{ prediction_text }}</b></p>
+          {% endif %}
+        </div>
+        <div class="mx-auto" style="max-width: 600px;">
+          <form method="POST">
+            <div class="mb-3">
+              <label for="news" class="form-label">Enter news headlines</label>
+              <input type="text" class="form-control" id="news" name="news" placeholder="Enter headline here">
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </form>
+        </div>
+        <!-- Prediction Results Table -->
+        {% if results %}
+          <div class="mt-5">
+            <hr>
+            <h2 class="mt-4">Prediction Results</h2>
+            <p><strong>Final Prediction:</strong>
+              <span class="{% if results.Meta_Ensemble.Final_Prediction == 'REAL NEWS' %}text-success{% else %}text-danger{% endif %}">
+                {{ results.Meta_Ensemble.Final_Prediction }}
+              </span>
+            </p>
+            <p><strong>Meta Probability of Fake News:</strong> {{ results.Meta_Ensemble.Meta_Probability | round(2) }}</p>
+            <h3 class="mt-4">Individual Model Predictions</h3>
+            <div class="table-responsive">
+              <table class="table table-striped table-bordered">
+                <thead class="table-dark">
+                  <tr>
+                    <th>Model</th>
+                    <th>Logistic Regression</th>
+                    <th>Random Forest</th>
+                    <th>LSTM</th>
+                    <th>DistilBERT</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Combined Model 1</td>
+                    <td>{{ results['Model 1']['LR'] | round(2) }}</td>
+                    <td>{{ results['Model 1']['RF'] | round(2) }}</td>
+                    <td>{{ results['Model 1']['LSTM'] | round(2) }}</td>
+                    <td>
+                      {% if results['Model 1']['DistilBERT'] is not none %}
+                        {{ results['Model 1']['DistilBERT'] | round(2) }}
+                      {% else %}
+                        N/A
+                      {% endif %}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Combined Model 2</td>
+                    <td>{{ results['Model 2']['LR'] | round(2) }}</td>
+                    <td>{{ results['Model 2']['RF'] | round(2) }}</td>
+                    <td>{{ results['Model 2']['LSTM'] | round(2) }}</td>
+                    <td>
+                      {% if results['Model 2']['DistilBERT'] is not none %}
+                        {{ results['Model 2']['DistilBERT'] | round(2) }}
+                      {% else %}
+                        N/A
+                      {% endif %}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </section>
+    <section class="bg-light py-5">
+      <div class="container">
+        <div class="text-center mb-4">
+          <h2 class="text-secondary">Latest News</h2>
+        </div>
+        <!-- News items will be rendered here -->
+        <div class="row" id="news-list"></div>
+      </div>
+    </section>
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" 
+      integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+    <script>
+      function fetchNews() {
+        fetch('http://localhost:5000/news')
+          .then(response => response.json())
+          .then(data => {
+            const newsList = document.getElementById('news-list');
+            newsList.innerHTML = '';  // Clear existing content
+            data.forEach(news => {
+              const col = document.createElement('div');
+              col.className = 'col-md-4';
+              col.innerHTML = `
+                <div class="card mb-4 shadow-sm">
+                  <div class="card-body">
+                    <h5 class="card-title">${news.title}</h5>
+                    <p class="card-text">${news.description}</p>
+                    <p class="card-text"><small class="text-muted">Source: ${news.source}</small></p>
+                    <p class="card-text"><small class="text-muted">Published: ${new Date(news.published_at).toLocaleString()}</small></p>
+                    <p class="card-text">
+                      <strong>Classification: <span class="${news.classification === 'REAL NEWS' ? 'text-success' : 'text-danger'}">
+                        ${news.classification}
+                      </span></strong> (Probability: ${news.probability.toFixed(2)})
+                    </p>
+                  </div>
+                </div>`;
+              newsList.appendChild(col);
+            });
+          })
+          .catch(error => console.error('Error fetching news:', error));
+      }
+      // Fetch news on page load
+      fetchNews();
+      // Update news every minute
+      setInterval(fetchNews, 60000);
+    </script>
+  </body>
+</html>

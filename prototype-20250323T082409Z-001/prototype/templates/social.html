@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Social News Feed</title>
+  <!-- Use Bootstrap 4 for a responsive, modern look -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+      body { background-color: #f8f9fa; }
+      .news-card { margin-bottom: 20px; }
+      .news-card .card-header { background-color: #007bff; color: white; }
+  </style>
+</head>
+<body>
+  <div class="container mt-4">
+      <h1 class="mb-4">Social News Feed</h1>
+      <div id="social-news-row" class="row">
+          <!-- Social news cards will be dynamically inserted here -->
+      </div>
+  </div>
+  
+  <script>
+    function fetchSocialNews() {
+      fetch('/socialnews')
+        .then(response => response.json())
+        .then(data => {
+          const container = document.getElementById('social-news-row');
+          container.innerHTML = '';
+          data.forEach(news => {
+            const col = document.createElement('div');
+            col.className = 'col-md-6';
+            col.innerHTML = `
+              <div class="card news-card">
+                <div class="card-header">
+                  <h5>${news.title}</h5>
+                </div>
+                <div class="card-body">
+                  <p class="card-text">${news.description}</p>
+                  <p><strong>Source:</strong> ${news.source}</p>
+                  <p><strong>Published:</strong> ${new Date(news.published_at).toLocaleString()}</p>
+                  <p><strong>Classification:</strong> ${news.classification} (Probability: ${news.probability.toFixed(2)})</p>
+                </div>
+              </div>
+            `;
+            container.appendChild(col);
+          });
+        })
+        .catch(err => console.error('Error fetching social news:', err));
+    }
+    
+    // Initial fetch on page load, then every minute.
+    fetchSocialNews();
+    setInterval(fetchSocialNews, 60000);
+  </script>
+  
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
